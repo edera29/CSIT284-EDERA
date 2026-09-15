@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'theme.dart';
 
 void main() {
   runApp(const QuizApp());
@@ -11,6 +12,7 @@ class QuizApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: AppTheme.theme,
       home: const QuizPage(),
     );
   }
@@ -55,9 +57,7 @@ class _QuizPageState extends State<QuizPage> {
   ];
 
   void selectAnswer(String answer) {
-    if (answered) {
-      return;
-    }
+    if (answered) return;
 
     setState(() {
       selectedAnswer = answer;
@@ -95,18 +95,18 @@ class _QuizPageState extends State<QuizPage> {
 
   Color getButtonColor(String choice) {
     if (!answered) {
-      return Colors.grey;
+      return AppTheme.cream;
     }
 
     if (choice == correctAnswers[currentQuestion]) {
-      return Colors.green;
+      return AppTheme.green;
     }
 
     if (choice == selectedAnswer) {
-      return Colors.red;
+      return AppTheme.orange;
     }
 
-    return Colors.grey;
+    return AppTheme.cream;
   }
 
   @override
@@ -115,8 +115,10 @@ class _QuizPageState extends State<QuizPage> {
       appBar: AppBar(
         title: const Text("Quiz App"),
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(20),
+
         child: quizFinished
             ? Center(
                 child: Column(
@@ -125,8 +127,9 @@ class _QuizPageState extends State<QuizPage> {
                     const Text(
                       "Quiz Finished!",
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 30,
                         fontWeight: FontWeight.bold,
+                        color: AppTheme.brown,
                       ),
                     ),
 
@@ -136,6 +139,7 @@ class _QuizPageState extends State<QuizPage> {
                       "Your Final Score: $score / ${questions.length}",
                       style: const TextStyle(
                         fontSize: 24,
+                        color: AppTheme.green,
                       ),
                     ),
 
@@ -143,11 +147,16 @@ class _QuizPageState extends State<QuizPage> {
 
                     ElevatedButton(
                       onPressed: restartQuiz,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.green,
+                        foregroundColor: Colors.white,
+                      ),
                       child: const Text("Take Quiz Again"),
                     ),
                   ],
                 ),
               )
+
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -156,15 +165,28 @@ class _QuizPageState extends State<QuizPage> {
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
+                      color: AppTheme.brown,
                     ),
                   ),
 
                   const SizedBox(height: 20),
 
                   Text(
+                    "Question ${currentQuestion + 1} of ${questions.length}",
+                    style: const TextStyle(
+                      color: AppTheme.brown,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  Text(
                     questions[currentQuestion],
                     style: const TextStyle(
                       fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.brown,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -172,26 +194,24 @@ class _QuizPageState extends State<QuizPage> {
                   const SizedBox(height: 30),
 
                   for (String choice in options[currentQuestion])
-                    Container(
+                    SizedBox(
                       width: double.infinity,
-                      margin: const EdgeInsets.only(bottom: 10),
-                      child: ElevatedButton(
-                        style: ButtonStyle(
-                          backgroundColor: WidgetStatePropertyAll(
-                            getButtonColor(choice),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: getButtonColor(choice),
+                            foregroundColor: answered
+                                ? Colors.white
+                                : AppTheme.brown,
                           ),
-                          foregroundColor: const WidgetStatePropertyAll(
-                            Colors.white,
-                          ),
+                          onPressed: () => selectAnswer(choice),
+                          child: Text(choice),
                         ),
-                        onPressed: () {
-                          selectAnswer(choice);
-                        },
-                        child: Text(choice),
                       ),
                     ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
 
                   if (answered)
                     Text(
@@ -203,15 +223,19 @@ class _QuizPageState extends State<QuizPage> {
                         fontWeight: FontWeight.bold,
                         color:
                             selectedAnswer == correctAnswers[currentQuestion]
-                                ? Colors.green
-                                : Colors.red,
+                                ? AppTheme.green
+                                : AppTheme.orange,
                       ),
                     ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 15),
 
                   ElevatedButton(
                     onPressed: answered ? nextQuestion : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.brown,
+                      foregroundColor: Colors.white,
+                    ),
                     child: Text(
                       currentQuestion == questions.length - 1
                           ? "Finish Quiz"
