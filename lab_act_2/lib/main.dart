@@ -27,6 +27,7 @@ class _QuizPageState extends State<QuizPage> {
   int currentQuestion = 0;
   String selectedAnswer = "";
   bool answered = false;
+  int score = 0;
 
   List<String> questions = [
     "What is the capital of the Philippines?",
@@ -60,6 +61,10 @@ class _QuizPageState extends State<QuizPage> {
     setState(() {
       selectedAnswer = answer;
       answered = true;
+
+      if (answer == correctAnswers[currentQuestion]) {
+        score++;
+      }
     });
   }
 
@@ -100,6 +105,16 @@ class _QuizPageState extends State<QuizPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Text(
+              "Score: $score",
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
             Text(
               questions[currentQuestion],
               style: const TextStyle(
