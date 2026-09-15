@@ -26,6 +26,7 @@ class QuizPage extends StatefulWidget {
 class _QuizPageState extends State<QuizPage> {
   int currentQuestion = 0;
   String selectedAnswer = "";
+  bool answered = false;
 
   List<String> questions = [
     "What is the capital of the Philippines?",
@@ -43,9 +44,22 @@ class _QuizPageState extends State<QuizPage> {
     ["8", "9", "10", "11"],
   ];
 
+  List<String> correctAnswers = [
+    "Manila",
+    "Mars",
+    "7",
+    "Dart",
+    "10",
+  ];
+
   void selectAnswer(String answer) {
+    if (answered) {
+      return;
+    }
+
     setState(() {
       selectedAnswer = answer;
+      answered = true;
     });
   }
 
@@ -54,8 +68,25 @@ class _QuizPageState extends State<QuizPage> {
       setState(() {
         currentQuestion++;
         selectedAnswer = "";
+        answered = false;
       });
     }
+  }
+
+  Color getButtonColor(String choice) {
+    if (!answered) {
+      return Colors.grey;
+    }
+
+    if (choice == correctAnswers[currentQuestion]) {
+      return Colors.green;
+    }
+
+    if (choice == selectedAnswer) {
+      return Colors.red;
+    }
+
+    return Colors.grey;
   }
 
   @override
@@ -84,16 +115,34 @@ class _QuizPageState extends State<QuizPage> {
                 width: double.infinity,
                 margin: const EdgeInsets.only(bottom: 10),
                 child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: selectedAnswer == choice
-                        ? Colors.blue
-                        : Colors.grey,
-                    foregroundColor: Colors.white,
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStatePropertyAll(
+                      getButtonColor(choice),
+                    ),
+                    foregroundColor: const WidgetStatePropertyAll(
+                      Colors.white,
+                    ),
                   ),
                   onPressed: () {
                     selectAnswer(choice);
                   },
                   child: Text(choice),
+                ),
+              ),
+
+            const SizedBox(height: 20),
+
+            if (answered)
+              Text(
+                selectedAnswer == correctAnswers[currentQuestion]
+                    ? "Correct!"
+                    : "Wrong!",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: selectedAnswer == correctAnswers[currentQuestion]
+                      ? Colors.green
+                      : Colors.red,
                 ),
               ),
 
