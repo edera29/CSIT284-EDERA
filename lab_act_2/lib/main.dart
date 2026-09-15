@@ -27,6 +27,7 @@ class _QuizPageState extends State<QuizPage> {
   int currentQuestion = 0;
   String selectedAnswer = "";
   bool answered = false;
+  bool quizFinished = false;
   int score = 0;
 
   List<String> questions = [
@@ -75,7 +76,21 @@ class _QuizPageState extends State<QuizPage> {
         selectedAnswer = "";
         answered = false;
       });
+    } else {
+      setState(() {
+        quizFinished = true;
+      });
     }
+  }
+
+  void restartQuiz() {
+    setState(() {
+      currentQuestion = 0;
+      selectedAnswer = "";
+      answered = false;
+      quizFinished = false;
+      score = 0;
+    });
   }
 
   Color getButtonColor(String choice) {
@@ -102,73 +117,109 @@ class _QuizPageState extends State<QuizPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "Score: $score",
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            Text(
-              questions[currentQuestion],
-              style: const TextStyle(
-                fontSize: 22,
-              ),
-              textAlign: TextAlign.center,
-            ),
-
-            const SizedBox(height: 30),
-
-            for (String choice in options[currentQuestion])
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.only(bottom: 10),
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStatePropertyAll(
-                      getButtonColor(choice),
+        child: quizFinished
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "Quiz Finished!",
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    foregroundColor: const WidgetStatePropertyAll(
-                      Colors.white,
+
+                    const SizedBox(height: 20),
+
+                    Text(
+                      "Your Final Score: $score / ${questions.length}",
+                      style: const TextStyle(
+                        fontSize: 24,
+                      ),
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    ElevatedButton(
+                      onPressed: restartQuiz,
+                      child: const Text("Take Quiz Again"),
+                    ),
+                  ],
+                ),
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Score: $score",
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  onPressed: () {
-                    selectAnswer(choice);
-                  },
-                  child: Text(choice),
-                ),
+
+                  const SizedBox(height: 20),
+
+                  Text(
+                    questions[currentQuestion],
+                    style: const TextStyle(
+                      fontSize: 22,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  for (String choice in options[currentQuestion])
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 10),
+                      child: ElevatedButton(
+                        style: ButtonStyle(
+                          backgroundColor: WidgetStatePropertyAll(
+                            getButtonColor(choice),
+                          ),
+                          foregroundColor: const WidgetStatePropertyAll(
+                            Colors.white,
+                          ),
+                        ),
+                        onPressed: () {
+                          selectAnswer(choice);
+                        },
+                        child: Text(choice),
+                      ),
+                    ),
+
+                  const SizedBox(height: 20),
+
+                  if (answered)
+                    Text(
+                      selectedAnswer == correctAnswers[currentQuestion]
+                          ? "Correct!"
+                          : "Wrong!",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            selectedAnswer == correctAnswers[currentQuestion]
+                                ? Colors.green
+                                : Colors.red,
+                      ),
+                    ),
+
+                  const SizedBox(height: 20),
+
+                  ElevatedButton(
+                    onPressed: answered ? nextQuestion : null,
+                    child: Text(
+                      currentQuestion == questions.length - 1
+                          ? "Finish Quiz"
+                          : "Next Question",
+                    ),
+                  ),
+                ],
               ),
-
-            const SizedBox(height: 20),
-
-            if (answered)
-              Text(
-                selectedAnswer == correctAnswers[currentQuestion]
-                    ? "Correct!"
-                    : "Wrong!",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: selectedAnswer == correctAnswers[currentQuestion]
-                      ? Colors.green
-                      : Colors.red,
-                ),
-              ),
-
-            const SizedBox(height: 20),
-
-            ElevatedButton(
-              onPressed: nextQuestion,
-              child: const Text("Next Question"),
-            ),
-          ],
-        ),
       ),
     );
   }
