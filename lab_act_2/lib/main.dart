@@ -25,6 +25,7 @@ class QuizPage extends StatefulWidget {
 
 class _QuizPageState extends State<QuizPage> {
   int currentQuestion = 0;
+  String selectedAnswer = "";
 
   List<String> questions = [
     "What is the capital of the Philippines?",
@@ -42,10 +43,17 @@ class _QuizPageState extends State<QuizPage> {
     ["8", "9", "10", "11"],
   ];
 
+  void selectAnswer(String answer) {
+    setState(() {
+      selectedAnswer = answer;
+    });
+  }
+
   void nextQuestion() {
     if (currentQuestion < questions.length - 1) {
       setState(() {
         currentQuestion++;
+        selectedAnswer = "";
       });
     }
   }
@@ -76,7 +84,15 @@ class _QuizPageState extends State<QuizPage> {
                 width: double.infinity,
                 margin: const EdgeInsets.only(bottom: 10),
                 child: ElevatedButton(
-                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: selectedAnswer == choice
+                        ? Colors.blue
+                        : Colors.grey,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () {
+                    selectAnswer(choice);
+                  },
                   child: Text(choice),
                 ),
               ),
