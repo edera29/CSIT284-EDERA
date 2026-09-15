@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 
-
 void main() {
   runApp(const QuizApp());
-
 }
 
 class QuizApp extends StatelessWidget {
-   const QuizApp({super.key});
-  
+  const QuizApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -26,15 +24,33 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
-  String question = "What is the capital of Philippines?";
+  int currentQuestion = 0;
 
-  List<String> options = [
-    "Cebu",
-    "Davao",
-    "Manila",
-    "Baguio"
+  List<String> questions = [
+    "What is the capital of the Philippines?",
+    "Which planet is known as the Red Planet?",
+    "How many days are there in a week?",
+    "Which language is used to build Flutter apps?",
+    "What is 5 + 5?",
   ];
-    @override
+
+  List<List<String>> options = [
+    ["Cebu", "Davao", "Manila", "Baguio"],
+    ["Earth", "Mars", "Jupiter", "Venus"],
+    ["5", "6", "7", "8"],
+    ["Java", "Dart", "Python", "C++"],
+    ["8", "9", "10", "11"],
+  ];
+
+  void nextQuestion() {
+    if (currentQuestion < questions.length - 1) {
+      setState(() {
+        currentQuestion++;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -46,7 +62,7 @@ class _QuizPageState extends State<QuizPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              question,
+              questions[currentQuestion],
               style: const TextStyle(
                 fontSize: 22,
               ),
@@ -55,7 +71,7 @@ class _QuizPageState extends State<QuizPage> {
 
             const SizedBox(height: 30),
 
-            for (String choice in options)
+            for (String choice in options[currentQuestion])
               Container(
                 width: double.infinity,
                 margin: const EdgeInsets.only(bottom: 10),
@@ -68,7 +84,7 @@ class _QuizPageState extends State<QuizPage> {
             const SizedBox(height: 20),
 
             ElevatedButton(
-              onPressed: () {},
+              onPressed: nextQuestion,
               child: const Text("Next Question"),
             ),
           ],
