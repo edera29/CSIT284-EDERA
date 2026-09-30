@@ -55,23 +55,13 @@ class _HomeState extends State<Home> {
 
     if (name.text.isEmpty || value == null || value <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Enter a valid expense.'),
-        ),
+        const SnackBar(content: Text('Enter a valid expense.')),
       );
       return;
     }
 
     setState(() {
-      expenses.add(
-        Expense(
-          name.text,
-          value,
-          category,
-          date,
-        ),
-      );
-
+      expenses.add(Expense(name.text, value, category, date));
       name.clear();
       amount.clear();
       category = 'Food';
@@ -79,14 +69,105 @@ class _HomeState extends State<Home> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Expense added successfully!'),
-      ),
+      const SnackBar(content: Text('Expense added successfully!')),
     );
   }
 
-  String formatDate(DateTime d) {
-    return '${d.month}/${d.day}/${d.year}';
+  void editExpense(Expense expense) {
+    final editName = TextEditingController(text: expense.name);
+    final editAmount =
+        TextEditingController(text: expense.amount.toString());
+
+    String editCategory = expense.category;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Edit Expense'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: editName,
+                    decoration: const InputDecoration(
+                      labelText: 'Expense Name',
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: editAmount,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Amount',
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    value: editCategory,
+                    decoration: const InputDecoration(
+                      labelText: 'Category',
+                    ),
+                    items: categories
+                        .map(
+                          (c) => DropdownMenuItem(
+                            value: c,
+                            child: Text(c),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setDialogState(() {
+                          editCategory = value;
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    final newAmount =
+                        double.tryParse(editAmount.text);
+
+                    if (editName.text.isEmpty ||
+                        newAmount == null ||
+                        newAmount <= 0) {
+                      return;
+                    }
+
+                    setState(() {
+                      expense.name = editName.text;
+                      expense.amount = newAmount;
+                      expense.category = editCategory;
+                    });
+
+                    Navigator.pop(context);
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Expense updated!'),
+                      ),
+                    );
+                  },
+                  child: const Text('Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> selectDate() async {
@@ -98,9 +179,7 @@ class _HomeState extends State<Home> {
     );
 
     if (picked != null) {
-      setState(() {
-        date = picked;
-      });
+      setState(() => date = picked);
     }
   }
 
@@ -124,17 +203,15 @@ class _HomeState extends State<Home> {
     );
 
     if (confirm == true) {
-      setState(() {
-        expenses.remove(expense);
-      });
+      setState(() => expenses.remove(expense));
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Expense deleted.'),
-        ),
+        const SnackBar(content: Text('Expense deleted.')),
       );
     }
   }
+
+  String formatDate(DateTime d) => '${d.month}/${d.day}/${d.year}';
 
   @override
   void dispose() {
@@ -227,9 +304,7 @@ class _HomeState extends State<Home> {
                   .toList(),
               onChanged: (v) {
                 if (v != null) {
-                  setState(() {
-                    category = v;
-                  });
+                  setState(() => category = v);
                 }
               },
             ),
@@ -276,9 +351,7 @@ class _HomeState extends State<Home> {
                   .toList(),
               onChanged: (v) {
                 if (v != null) {
-                  setState(() {
-                    filter = v;
-                  });
+                  setState(() => filter = v);
                 }
               },
             ),
@@ -317,6 +390,10 @@ class _HomeState extends State<Home> {
                                     fontWeight: FontWeight.bold,
                                     color: AppTheme.green,
                                   ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () => editExpense(e),
                                 ),
                                 IconButton(
                                   icon: const Icon(Icons.delete),
