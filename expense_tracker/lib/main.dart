@@ -18,6 +18,7 @@ class ExpenseApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      title: 'Expense Tracker',
       theme: AppTheme.theme,
       home: const Home(),
     );
@@ -36,7 +37,14 @@ class _HomeState extends State<Home> {
   final name = TextEditingController();
   final amount = TextEditingController();
 
-  final categories = ['Food', 'Transport', 'School', 'Shopping', 'Bills', 'Other'];
+  final categories = [
+    'Food',
+    'Transport',
+    'School',
+    'Shopping',
+    'Bills',
+    'Other'
+  ];
 
   String category = 'Food';
   String filter = 'All';
@@ -46,21 +54,94 @@ class _HomeState extends State<Home> {
     final value = double.tryParse(amount.text);
 
     if (name.text.isEmpty || value == null || value <= 0) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Enter a valid expense.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Enter a valid expense.'),
+        ),
+      );
       return;
     }
 
     setState(() {
-      expenses.add(Expense(name.text, value, category, date));
+      expenses.add(
+        Expense(
+          name.text,
+          value,
+          category,
+          date,
+        ),
+      );
+
       name.clear();
       amount.clear();
       category = 'Food';
       date = DateTime.now();
     });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Expense added successfully!'),
+      ),
+    );
   }
 
-  String formatDate(DateTime d) => '${d.month}/${d.day}/${d.year}';
+  String formatDate(DateTime d) {
+    return '${d.month}/${d.day}/${d.year}';
+  }
+
+  Future<void> selectDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: date,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+    );
+
+    if (picked != null) {
+      setState(() {
+        date = picked;
+      });
+    }
+  }
+
+  Future<void> deleteExpense(Expense expense) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Expense?'),
+        content: Text('Remove "${expense.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      setState(() {
+        expenses.remove(expense);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Expense deleted.'),
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    name.dispose();
+    amount.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,10 +149,15 @@ class _HomeState extends State<Home> {
         ? expenses
         : expenses.where((e) => e.category == filter).toList();
 
-    final total = list.fold(0.0, (sum, e) => sum + e.amount);
+    final total = list.fold<double>(
+      0,
+      (sum, e) => sum + e.amount,
+    );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Expense Tracker')),
+      appBar: AppBar(
+        title: const Text('Expense Tracker'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -83,7 +169,9 @@ class _HomeState extends State<Home> {
                   children: [
                     const Text(
                       'Total Expenses',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Text(
                       '₱${total.toStringAsFixed(2)}',
@@ -113,7 +201,9 @@ class _HomeState extends State<Home> {
 
             TextField(
               controller: amount,
-              keyboardType: TextInputType.number,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: const InputDecoration(
                 labelText: 'Amount (₱)',
                 prefixIcon: Icon(Icons.payments),
@@ -122,30 +212,39 @@ class _HomeState extends State<Home> {
 
             const SizedBox(height: 10),
 
-            DropdownButtonFormField(
+            DropdownButtonFormField<String>(
               value: category,
-              decoration: const InputDecoration(labelText: 'Category'),
+              decoration: const InputDecoration(
+                labelText: 'Category',
+              ),
               items: categories
-                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                  .map(
+                    (c) => DropdownMenuItem(
+                      value: c,
+                      child: Text(c),
+                    ),
+                  )
                   .toList(),
-              onChanged: (v) => setState(() => category = v!),
+              onChanged: (v) {
+                if (v != null) {
+                  setState(() {
+                    category = v;
+                  });
+                }
+              },
             ),
 
             const SizedBox(height: 10),
 
             Row(
               children: [
-                Expanded(child: Text('Date: ${formatDate(date)}')),
+                Expanded(
+                  child: Text(
+                    'Date: ${formatDate(date)}',
+                  ),
+                ),
                 TextButton(
-                  onPressed: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: date,
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime.now(),
-                    );
-                    if (picked != null) setState(() => date = picked);
-                  },
+                  onPressed: selectDate,
                   child: const Text('Select Date'),
                 ),
               ],
@@ -162,20 +261,35 @@ class _HomeState extends State<Home> {
 
             const SizedBox(height: 12),
 
-            DropdownButtonFormField(
+            DropdownButtonFormField<String>(
               value: filter,
-              decoration: const InputDecoration(labelText: 'Filter'),
+              decoration: const InputDecoration(
+                labelText: 'Filter',
+              ),
               items: ['All', ...categories]
-                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                  .map(
+                    (c) => DropdownMenuItem(
+                      value: c,
+                      child: Text(c),
+                    ),
+                  )
                   .toList(),
-              onChanged: (v) => setState(() => filter = v!),
+              onChanged: (v) {
+                if (v != null) {
+                  setState(() {
+                    filter = v;
+                  });
+                }
+              },
             ),
 
             const SizedBox(height: 10),
 
             Expanded(
               child: list.isEmpty
-                  ? const Center(child: Text('No expenses found.'))
+                  ? const Center(
+                      child: Text('No expenses found.'),
+                    )
                   : ListView.builder(
                       itemCount: list.length,
                       itemBuilder: (_, i) {
@@ -185,11 +299,15 @@ class _HomeState extends State<Home> {
                           child: ListTile(
                             leading: const CircleAvatar(
                               backgroundColor: AppTheme.lightGreen,
-                              child: Icon(Icons.receipt_long),
+                              child: Icon(
+                                Icons.receipt_long,
+                                color: AppTheme.dark,
+                              ),
                             ),
                             title: Text(e.name),
-                            subtitle:
-                                Text('${e.category} • ${formatDate(e.date)}'),
+                            subtitle: Text(
+                              '${e.category} • ${formatDate(e.date)}',
+                            ),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -202,9 +320,7 @@ class _HomeState extends State<Home> {
                                 ),
                                 IconButton(
                                   icon: const Icon(Icons.delete),
-                                  onPressed: () {
-                                    setState(() => expenses.remove(e));
-                                  },
+                                  onPressed: () => deleteExpense(e),
                                 ),
                               ],
                             ),
