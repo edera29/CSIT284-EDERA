@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'theme.dart';
 
@@ -24,11 +23,13 @@ class Expense {
   final String title;
   final double amount;
   final DateTime date;
+  final String category;
 
   Expense({
     required this.title,
     required this.amount,
     required this.date,
+    required this.category,
   });
 }
 
@@ -45,6 +46,17 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
   final _titleController = TextEditingController();
   final _amountController = TextEditingController();
 
+  final List<String> _categories = [
+    'Food',
+    'Transport',
+    'School',
+    'Shopping',
+    'Bills',
+    'Other',
+  ];
+
+  String _selectedCategory = 'Food';
+  String _filterCategory = 'All';
   DateTime _selectedDate = DateTime.now();
 
   void _addExpense() {
@@ -66,6 +78,7 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
           title: title,
           amount: amount,
           date: _selectedDate,
+          category: _selectedCategory,
         ),
       );
     });
@@ -74,6 +87,7 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
     _amountController.clear();
 
     setState(() {
+      _selectedCategory = 'Food';
       _selectedDate = DateTime.now();
     });
 
@@ -124,7 +138,13 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final totalExpenses = _expenses.fold<double>(
+    final filteredExpenses = _filterCategory == 'All'
+        ? _expenses
+        : _expenses
+            .where((expense) => expense.category == _filterCategory)
+            .toList();
+
+    final totalExpenses = filteredExpenses.fold<double>(
       0,
       (sum, expense) => sum + expense.amount,
     );
@@ -188,6 +208,29 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
 
             const SizedBox(height: 12),
 
+            DropdownButtonFormField<String>(
+              value: _selectedCategory,
+              decoration: const InputDecoration(
+                labelText: 'Category',
+                prefixIcon: Icon(Icons.category),
+              ),
+              items: _categories.map((category) {
+                return DropdownMenuItem(
+                  value: category,
+                  child: Text(category),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    _selectedCategory = value;
+                  });
+                }
+              },
+            ),
+
+            const SizedBox(height: 12),
+
             Row(
               children: [
                 Expanded(
@@ -204,8 +247,6 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
               ],
             ),
 
-            const SizedBox(height: 8),
-
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -215,7 +256,51 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
+
+            Row(
+              children: [
+                const Text(
+                  'Filter:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _filterCategory,
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                    ),
+                    items: [
+                      const DropdownMenuItem(
+                        value: 'All',
+                        child: Text('All Categories'),
+                      ),
+                      ..._categories.map(
+                        (category) => DropdownMenuItem(
+                          value: category,
+                          child: Text(category),
+                        ),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _filterCategory = value;
+                        });
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
 
             const Align(
               alignment: Alignment.centerLeft,
@@ -229,20 +314,21 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
 
             Expanded(
-              child: _expenses.isEmpty
+              child: filteredExpenses.isEmpty
                   ? const Center(
                       child: Text(
-                        'No expenses yet. Add your first expense!',
+                        'No expenses found.',
                         textAlign: TextAlign.center,
                       ),
                     )
                   : ListView.builder(
-                      itemCount: _expenses.length,
+                      itemCount: filteredExpenses.length,
                       itemBuilder: (context, index) {
-                        final expense = _expenses[index];
+                        final expense = filteredExpenses[index];
+                        final actualIndex = _expenses.indexOf(expense);
 
                         return Card(
                           child: ListTile(
@@ -260,7 +346,7 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
                               ),
                             ),
                             subtitle: Text(
-                              _formatDate(expense.date),
+                              '${expense.category} • ${_formatDate(expense.date)}',
                             ),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -273,12 +359,9 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
                                   ),
                                 ),
                                 IconButton(
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
-                                  ),
+                                  icon: const Icon(Icons.delete),
                                   onPressed: () {
-                                    _deleteExpense(index);
+                                    _deleteExpense(actualIndex);
                                   },
                                 ),
                               ],
