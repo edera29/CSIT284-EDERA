@@ -12,7 +12,9 @@ class CategoryGridItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
         gradient: LinearGradient(
           colors: [
             category.color.withValues(alpha: 0.55),
