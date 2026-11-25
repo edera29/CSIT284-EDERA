@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "420149052867",
+    "firebase_url": "https://class-schedule-app-331ec-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "class-schedule-app-331ec",
+    "storage_bucket": "class-schedule-app-331ec.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:420149052867:android:cada9752357a244bc56976",
+        "android_client_info": {
+          "package_name": "com.example.class_schedule"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgl0xpDfltirhA5er07Bx2fVGTMQAYc7U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
